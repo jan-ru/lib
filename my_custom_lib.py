@@ -42,7 +42,7 @@ def xls2md(table: dict) -> pd.DataFrame:
     locale.setlocale(locale.LC_ALL, 'de_DE')
 
     if table_exists(table['name']):
-        coordinaten = unpack_xy(table['range'])      
+        coordinaten = unpack_xy(table['range'])
         sia_projecten = pd.ExcelFile(table['file'])
         with sia_projecten as xls:
             df = pd.read_excel(xls, table['sheet'],
