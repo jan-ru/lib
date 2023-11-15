@@ -20,6 +20,7 @@ To do:
      * add 'contact' field
      * www.nro.nl (scraping?)
      * www.nwo.nl (api)
+     * add dataset metadata (docs.profiling.ydata.ai)
 
 """
 
@@ -47,7 +48,6 @@ def write2excel_table(df: pd.DataFrame, input_website: str, output_file: str,
         df.to_excel(writer, sheet_name=sheet, index=False)
         workbook = writer.book
         # print('type workbook: ', workbook)
-       
         text_format = workbook.add_format({'text_wrap': True,
                                            'align': 'vcenter'})
         link_format = workbook.add_format({'color': 'blue',
@@ -73,7 +73,7 @@ def write2excel_table(df: pd.DataFrame, input_website: str, output_file: str,
         worksheet.set_column('K:K', 20)               # Contactpersoon
 
 #    write2excel_cover(writer, workbook, input_website, output_file, 'Cover',
-# 'j.r.muller@hva.nl', max_row, max_col) 
+# 'j.r.muller@hva.nl', max_row, max_col)
 
 # tabel programma?, tabel plaats?
 
@@ -98,6 +98,7 @@ def write2excel_table(df: pd.DataFrame, input_website: str, output_file: str,
         worksheet.write_row(7, 0, ('Contact', contact_email))
 
 # eventueel unique values per kolom?
+
 
 for page in range(0, 1):
     # read webpage(s), max page# = 127
