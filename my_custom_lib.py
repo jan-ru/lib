@@ -40,6 +40,7 @@ from sys import exit
 def xls2md(table: dict) -> pd.DataFrame:
 
     locale.setlocale(locale.LC_ALL, 'de_DE')
+    print(table)
 
     if table_exists(table['name']):
         coordinaten = unpack_xy(table['range'])
