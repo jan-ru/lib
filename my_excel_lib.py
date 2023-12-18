@@ -24,15 +24,15 @@ To do:
    https://github.com/SpeerSec/excel2markdown
 """
 
+import sys
 import csv
-import magic
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
 
 def get_tables(excel_file_name: str) -> dict:
-    """ Get all tables from a given workbook. Returns a dictionary of tables.
-        Requires a filename, which includes the path and filename.
+    """Get all tables from a given workbook. Returns a dictionary of tables.
+    Requires a filename, which includes the path and filename.
     """
     tables = {}
 
@@ -41,11 +41,12 @@ def get_tables(excel_file_name: str) -> dict:
         for tbl in ws.tables.values():
             # print("table aantal", len(ws.tables))
             tables[tbl.name] = {
-                'file': excel_file_name,
-                'sheet': ws.title,
-                'name': tbl.name,
-                'range': tbl.ref,
-                'columns': tbl.tableColumns}
+                "file": excel_file_name,
+                "sheet": ws.title,
+                "name": tbl.name,
+                "range": tbl.ref,
+                "columns": tbl.tableColumns,
+            }
             # print(" : " + tbl.displayName)
             # print("   - #cols = %d" % len(tbl.tableColumns))
             # for col in tbl.tableColumns:
@@ -55,30 +56,14 @@ def get_tables(excel_file_name: str) -> dict:
     return tables
 
 
-def file_exists(filename: str) -> bool:
-    # credit: excel2markdown by SpeerSec:
-    # https://github.com/SpeerSec/excel2markdown
+def column_number_string(n):
+    """
+    number is converted into a string
 
-    # Check the file extension
-    if not filename.endswith((".xlsx", ".xml")):
-        print("Error: only Excel files with the .xlsx or .xml",
-              "extension are allowed.")
-        exit()
+    Example:
+        column_number_string(1) results in 'a'
 
-    # Open the file in binary mode
-    with open(filename, "rb") as t:
-        file_type = magic.from_buffer(t.read())
-        t.close
-
-    # Check if the file is an Excel file
-    if "Microsoft Excel" not in file_type and "XML" not in file_type:
-        print("Error: the provided file is not an Excel file.")
-        exit()
-
-    return True
-
-
-def colnum_string(n):
+    """
     string = ""
     while n > 0:
         n, remainder = divmod(n - 1, 26)
@@ -87,55 +72,66 @@ def colnum_string(n):
 
 
 def expand_table():
-    tableName = 'Data'
+    """
+    from a workbook (wb) and a worksheet (ws) a table is created?
+    """
+    table_name = "Data"
 
-    style = TableStyleInfo(name="TableStyleMedium9",
-                           showFirstColumn=False,
-                           showLastColumn=False,
-                           showRowStripes=True,
-                           showColumnStripes=False)
+    style = TableStyleInfo(
+        name="TableStyleMedium9",
+        showFirstColumn=False,
+        showLastColumn=False,
+        showRowStripes=True,
+        showColumnStripes=False,
+    )
 
-    wb = load_workbook(filename='workbook.xlsx')
+    wb = load_workbook(filename="workbook.xlsx")
     ws = wb["inputData"]
 
-    with open('input.csv', newline='', encoding='utf-8-sig') as f:
-        reader = csv.reader(f, delimiter=';')
+    with open("input.csv", newline="", encoding="utf-8-sig") as f:
+        reader = csv.reader(f, delimiter=";")
         for i, row in enumerate(reader):
             for j, cell in enumerate(row):
                 if not i == 0:
-                    ws.cell(row=i+1, column=j+1).value = float(cell)
+                    ws.cell(row=i + 1, column=j + 1).value = float(cell)
                 else:
-                    ws.cell(row=i+1, column=j+1).value = cell
+                    ws.cell(row=i + 1, column=j + 1).value = cell
 
-                maxRef = [i, j]
+                max_ref = [i, j]
 
     for i, table in enumerate(ws._tables):
-        if table.name == tableName:
-            tableRef = i
+        if table.name == table_name:
+            table_ref = i
 
-    resTable = Table(displayName="Data",
-                     ref="A1:{}{}".format(colnum_string(maxRef[0]),
-                                          maxRef[1]))
-    resTable.tableStyleInfo = style
+    res_table = Table(
+        displayName="Data",
+        ref="A1:{}{}".format(column_number_string(max_ref[0]), max_ref[1]),
+    )
+    res_table.tableStyleInfo = style
 
-    ws._tables[tableRef] = resTable
+    ws._tables[table_ref] = res_table
 
-    wb.save('output.xlsx')
+    wb.save("output.xlsx")
 
 
 # Creating a table
-def create_tabel(tabel_name: str):
-    from openpyxl import Workbook
-    from openpyxl.worksheet.table import Table, TableStyleInfo
-
+def create_tabel(table_name: str):
+    """
+    Table must be added using ws.add_table() method to avoid duplicate names.
+    Using this method ensures table name is unque through out defined names
+    and all other table name.
+    not correct
+    """
+    if table_name not in ["a", "b"]:
+        sys.exit("Error: table not in Excel file")
     wb = Workbook()
     ws = wb.active
 
     data = [
-        ['Apples', 10000, 5000, 8000, 6000],
-        ['Pears',   2000, 3000, 4000, 5000],
-        ['Bananas', 6000, 6000, 6500, 6000],
-        ['Oranges',  500,  300,  200,  700],
+        ["Apples", 10000, 5000, 8000, 6000],
+        ["Pears", 2000, 3000, 4000, 5000],
+        ["Bananas", 6000, 6000, 6500, 6000],
+        ["Oranges", 500, 300, 200, 700],
     ]
 
     # add column headings. NB. these must be strings
@@ -146,17 +142,14 @@ def create_tabel(tabel_name: str):
     tab = Table(displayName="Table1", ref="A1:E5")
 
     # Add a default style with striped rows and banded columns
-    style = TableStyleInfo(name="TableStyleMedium9",
-                           showFirstColumn=False,
-                           showLastColumn=False,
-                           showRowStripes=True,
-                           showColumnStripes=True)
+    style = TableStyleInfo(
+        name="TableStyleMedium9",
+        showFirstColumn=False,
+        showLastColumn=False,
+        showRowStripes=True,
+        showColumnStripes=True,
+    )
     tab.tableStyleInfo = style
 
-    '''
-    Table must be added using ws.add_table() method to avoid duplicate names.
-    Using this method ensures table name is unque through out defined names
-    and all other table name.
-    '''
     ws.add_table(tab)
     wb.save("table.xlsx")

@@ -1,0 +1,5 @@
+[BASIC]
+
+# Good variable names which should always be accepted, separated by a comma.
+good-names=df, wb, ws, x1, x2, y1, y2, f, i, j, n, t
+
